@@ -1,42 +1,33 @@
 #!/usr/bin/python3
 """
-script that starts a Flask web application:
+Starts a Flask web application.
+The application listens on 0.0.0.0, port 5000.
 Routes:
-* /: display “Hello HBNB!”
-* /hbnb: display “HBNB”
-* /c/<text>: display “C ” followed by the value of the text variable
-  (replace underscore _ symbols with a space )
-* /python/(<text>): display “Python ”, followed by the value of the
-  text variable (replace underscore _ symbols with a space )
+/states_list: HTML page with a list of all State objects in DBStorage.
 """
-from flask import Flask
-from flask import render_template
+from flask import Flask, render_template
 from models import storage
 from models.state import State
-
 app = Flask(__name__)
+app.url_map.strict_slashes = False
 
 
 @app.teardown_appcontext
-def teardown_db(exception):
-    """
-      Function to remove SQLAlchemy Session
-    """
+def close_db(exc):
+    """close the current session of sqlalchemist"""
     storage.close()
 
 
-@app.route('/states_list/', strict_slashes=False)
+@app.route('/states_list')
 def states_list():
     """
-    Template html
+    Displays an HTML page with a list of all State objects in DBStorage.
+    States are sorted by name.
     """
-    the_states = storage.all(State).values()
-    """
-    my_list = []
-    for key, val in my_storage.items():
-        my_list.append(the_states[key])
-    """
-    return render_template('7-states_list.html', my_states=the_states)
+    states = storage.all(State).values()
+    return render_template("7-states_list.html", states=states)
+
 
 if __name__ == "__main__":
-    app.run("0.0.0.0", debug=True)
+    app.run(host='0.0.0.0', port=5000)
+    app.run(debug=True)
